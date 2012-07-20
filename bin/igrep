@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+
+# the "i" is for interactive
+require 'interactive_grep'
+
+if __FILE__ == $0
+	if '-h' == ARGV[0] || 0 == ARGV.size
+		puts	"usage $0 -h"
+		puts	"\tproduces this help-message"
+		puts	""
+		
+		puts	"usage $0 <input_file> [<pattern>] [<display count-only>] [<interactive-mode=on>]"
+		puts	""
+		puts 	"e.g."
+		puts 	"./igrep.rb big_test.txt.gz"
+		puts 	'./igrep.rb "/reporting/access*.gz" cvsfa=63'
+		puts	""
+		exit
+	end
+
+	in_file = ARGV[0]
+	pattern = nil
+	interactive = nil
+	just_count = false
+	prompt = nil
+	if 2 <= ARGV.size
+		pattern = ARGV[1]
+	end
+	if 3 <= ARGV.size
+		# ARGV[2]
+		just_count = true
+		puts "true count: #{ARGV[2]}"
+	end
+	if 4 <= ARGV.size
+		interactive = ARGV[3]
+		puts "interactive mode: #{interactive}"
+	end
+
+	prompt = 'ready to continue' if interactive
+	igrep = InteractiveGrep::Grepper.new(in_file,pattern,just_count,interactive)
+	puts "#{prompt}\n\n" if interactive
+	igrep.run()
+	exit
+end
