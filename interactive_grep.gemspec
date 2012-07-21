@@ -8,8 +8,8 @@ Gem::Specification.new do |s|
   s.authors     = ["JayTeeSr"]
   s.email       = ["jaytee_sr_at_his-service_dot_net"]
   s.homepage    = "https://github.com/JayTeeSF/interactive_grep"
-  s.summary     = %q{My very first Ruby program, which helped me interactively grep for multi-line patterns in gzipped weblogs}
-  s.description = %q{Interactively grep for stuff in (optionally gzipped) files}
+  s.summary     = %q{My very first Ruby program, for interactively grepping through gzipped weblogs for unexpected patterns}
+  s.description = %q{grep for stuff in (optionally gzipped) files ...even before you fully know what that 'stuff' looks like}
   s.rubyforge_project = "interactive_grep"
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")

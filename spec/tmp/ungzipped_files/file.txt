@@ -1,0 +1,5 @@
+non matching line
+pattern1|pattern2|pattern3
+non matching line
+patternA|patternB|patternC
+non matching line
