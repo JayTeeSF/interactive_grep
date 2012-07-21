@@ -3,16 +3,16 @@ require 'zlib'
 module InteractiveGrep
   class Grepper
     DEFAULT_PATTERN = %r{.}.freeze
-    DEFAULT_NUMBER_OF_LINES_TO_INDICATE = 100.freeze
+    DEFAULT_PROGRESS_INDICATOR_COUNT = 100.freeze # in verbose mode, show signs of life after processing every N lines
     DEBUG = false.freeze
 
-    attr_accessor :file_names, :current_pattern, :initial_pattern, :file_index, :enough_lines_to_indicate
-    attr_writer :gz
+    attr_reader :file_names, :current_pattern, :file_index
+    attr_accessor :progress_indicator_count, :initial_pattern
 
     def initialize( options = nil )
       options ||= {}
 
-      @enough_lines_to_indicate = options[:line_indicator_count] || DEFAULT_NUMBER_OF_LINES_TO_INDICATE
+      @progress_indicator_count = options[:progress_indicator_count] || DEFAULT_PROGRESS_INDICATOR_COUNT
       @verbose = DEBUG || !!options[ "verbose" ]
       @mode = options[ "mode" ] || "normal"
       @gz = options[ "gz" ]
@@ -74,7 +74,7 @@ module InteractiveGrep
           end
           @current_pattern = prompt( line )
         end
-        puts "." if verbose? && 0 == (counter % enough_lines_to_indicate)
+        puts "." if verbose? && 0 == (counter % progress_indicator_count)
       end
       reset_file_index
       puts "no more files.\n" if verbose?
@@ -88,6 +88,8 @@ module InteractiveGrep
     end
 
     private
+
+    attr_reader :current_pattern, :file_index
 
     def verbose?
       !!@verbose
@@ -106,7 +108,6 @@ module InteractiveGrep
 
       if interactive?
         puts ". | O | <pattern: [#{current_pattern_string}]> ? "
-        # user_input = STDIN.gets.strip
         user_input = STDIN.gets.chomp
         puts ""
         puts "user_input: >>#{user_input.inspect}<<" if DEBUG
