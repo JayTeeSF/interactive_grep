@@ -1,14 +1,11 @@
 Interactively Grep for patterns.
 
-This works particularly well for files with muli-line patterns (like
-weblogs) and it handles zipped files.
+This works particularly well for exploring multi-line pattern even in gzip'd files (i.e. weblogs)
 
-The code: pretty-yucky. This is based on my very first Ruby program (and
-the code was a total hack)!
+Why? This is based on my very first Ruby program (the code was a total hack)!
 
-But I've kept it because it's actually useful.
-And hopefully by the time you see this the code will serve as an example
-of the power of refactoring ;)
+I kept it because it's actually useful.
+Hopefully by the time you get this the code (v1.0), it will serve as an example of the power of refactoring ;)
 
 Basic use-case(s):
   gem install interactive_grep
@@ -17,41 +14,47 @@ Basic use-case(s):
 
   # OR in your code:
   irb
-    # normal ('grep') mode - support(s) regular or gzipped files
-    ig = InteractiveGrep::Grepper.new("files" => "/path/to/weblog.gz",
-                                      "pattern" => search_string
+    # normal ('grep') mode
+    ig = InteractiveGrep::Grepper.new(
+           "files" => "/path/to/weblog.gz",
+           "pattern" => search_string
     )
     puts ig.run
-    # => [matching_line1, matching_line2, matching_line3, etc...]
+    # => [matching_line1, ..., matching_lineN]
 
-    # count ('grep -c') mode - support(s) regular or gzipped files
-    ig = InteractiveGrep::Grepper.new("files" => "/path/to/weblog.gz",
-                                      "pattern" => search_string,
-                                      "mode" => "count"
+    # count ('grep -c') mode
+    ig = InteractiveGrep::Grepper.new(
+           "files" => "/path/to/weblog.gz",
+           "pattern" => search_string,
+           "mode" => "count"
     )
     ig.run
     # => 20
 
     # interactive mode - oh yeah!!!
-    ig = InteractiveGrep::Grepper.new(files => "/path/to/weblog.gz",
-                                      "pattern" => search_string
+    ig = InteractiveGrep::Grepper.new(
+           files => "/path/to/weblog.gz",
+           "pattern" => search_string
+           "mode" => "interactive"
     )
-    ig.interactive = true
     ig.run
-      # every time your *current* pattern is matched,
-      # the match is displayed
-      # and you are prompted to:
-      #   repeat the same search pattern (press enter)
-      #   'S'ee what's on the next line of the file (enter S)
-      #   adjust the search pattern (whatever you enter)
-      #   turn 'O'ff interactive-mode (enter O)
-      #    ...at which point the rest of the results will be 
-      #    automatically matched using the current pattern
+      # every line matching the current pattern is displayed
+      # and you're prompted to:
+      #   repeat the current search (press enter)
+      #
+      #   turn off interactive-mode (enter '-'*)
+      #    -- grep remainder of file(s) for current pattern
+      #
+      #   modify the current pattern (whatever you enter)
+      #    e.g. to explore one-line at a time enter "." (dot)
+      #    *note: to search for a dash, escape it (i.e. "\-")
 
 (See specs for more detailed use-cases ...and short-comings)
 rake rspec
 
 # TODO:
-# add specs for the behavior I described above
+# specs the behavior I've already described
 # test-drive an API I can be proud of ;-)
-# ability to record & replay grep-sessions
+# refactor (DRY-up and modularize)
+# add ability to record & replay grep-sessions
+# add support for zip, bzip, etc..

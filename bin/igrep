@@ -1,46 +1,47 @@
 #!/usr/bin/env ruby
-
 # the "i" is for interactive
+
 begin
   require 'rubygems'
   gem 'interactive_grep'
+  require 'interactive_grep'
 rescue LoadError
+  require File.expand_path( '../../lib/interactive_grep/grepper.rb', __FILE__ )
 end
-file_or_gem = File.expand_path( '../../lib/interactive_grep/grepper.rb', __FILE__ )
-file_or_gem = 'interactive_grep' unless File.exists?( file_or_gem )
-require file_or_gem
+require 'optparse'
 
-# TODO: replace this w/ a real cmd-line options parser!
-if 0 == ARGV.size || InteractiveGrep::Grepper.contains_option?(ARGV,'h')
-  puts InteractiveGrep::Grepper.usage
-end
+options = {}
+options["verbose"] = true
 
-pattern = nil; interactive = true
+opt_parser = OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} [OPTIONS] A_FILEGLOB or FILE(S)"
 
-in_file = ARGV[0]
+  options["pattern"] = nil
+  opts.on( "--pattern [PATTERN]", "Regex to grep with") do |p|
+    options["pattern"] = p
+  end
 
-if 2 <= ARGV.size
-  pattern = ARGV[1]
-end
+  options["mode"] = 'interactive'
+  opts.on( "--mode [MODE]", ['interactive', 'count', 'normal'], "'interactive', 'count' or 'normal'") do |m|
+    options["mode"] = m
+  end
 
-if 3 <= ARGV.size
-  mode = case ARGV[2]
-         when /^i/i
-           interactive = true
-           "interactive"
-         when /^c/i
-           interactive = false
-           "count"
-         else
-           interactive = false
-           "normal"
-         end
+  opts.on_tail( '-h', '--help', 'This help screen' ) do
+    puts opts
+    exit
+  end
 end
 
-mode ||= interactive ? "interactive" : "normal"
-igrep = InteractiveGrep::Grepper.new( { "files" => in_file, "pattern" => pattern, "mode" => mode, "verbose" => "true" } )
+opt_parser.parse!
 
-puts "Welcome..." if interactive
+options["files"] = ARGV
+if options["files"].empty?
+  puts opt_parser
+  exit
+end
+
+igrep = InteractiveGrep::Grepper.new( options )
+puts "Welcome..." if :interactive == options["mode"]
 igrep.run()
 
 exit

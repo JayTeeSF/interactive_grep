@@ -10,49 +10,26 @@ module InteractiveGrep
 
     def initialize( options = nil )
       options ||= {}
+
       @enough_lines_to_indicate = options[:line_indicator_count] || DEFAULT_NUMBER_OF_LINES_TO_INDICATE
       @verbose = DEBUG || !!options[ "verbose" ]
+      @mode = options[ "mode" ] || "normal"
+      @gz = options[ "gz" ]
+      @initial_pattern = !!options[ "pattern" ] ? %r{#{options[ "pattern" ]}} : DEFAULT_PATTERN
+      @current_pattern = @initial_pattern
       reset_file_index
-      @file_names = options[ "files" ]
-      if ( !@file_names.is_a?( Array ) ) && @file_names[/\*/]
-        @file_names = Dir.glob( @file_names ).map{|fname| fname}
-      end
-      @file_names = [ @file_names ] unless @file_names.is_a? Array
-      unless current_file && File.exists?( current_file )
+      @file_names = self.class.globs_to_files( options[ "files" ] )
+
+      if !current_file || !File.exists?( current_file )
         raise "must specify at least one valid file (and/or file_glob)"
       end
 
-      @initial_pattern = !!options[ "pattern" ] ? %r{#{options[ "pattern" ]}} : DEFAULT_PATTERN
-      @current_pattern = @initial_pattern
-
-      @mode = options[ "mode" ] || "normal"
-
-      @gz = options[ "gz" ]
-
-      if verbose?
-        puts "using:\n\tfiles: #{file_names}\n\tending in: #{ending}\n\tinitial_pattern: #{current_pattern_string}\n"
-      end
+      puts "using:\n\tfiles: #{file_names}\n\tending in: #{ending}\n\tinitial_pattern: #{current_pattern_string}\n" if verbose?
     end
 
-    def self.contains_option?(input_options, option_string)
-      input_options.any?{|o| o[/^\s*\-+#{option_string}/] }
-    end
-
-    def self.usage
-      puts	"usage $0 [-h]"
-      puts	"\tproduces this help-message"
-      puts	""
-
-      puts	"usage $0 <input_file> [<pattern>] [<mode>]"
-      puts	""
-      puts 	"modes: 'interactive' (default), 'count', or 'normal'"
-      puts 	"e.g."
-      puts 	"./igrep.rb big_test.txt.gz"
-      puts 	'./igrep.rb "/reporting/access*.gz" cvsfa=63 interactive'
-      puts 	'./igrep.rb "/reporting/access*.gz" cvsfa=63 count'
-      puts 	'./igrep.rb "/reporting/access*.gz" cvsfa=63 # normal-grep mode'
-      puts	""
-      exit
+    def self.globs_to_files( files_or_globs )
+      files_or_globs = files_or_globs.is_a?( Array ) ? [ files_or_globs ] : files_or_globs
+      files_or_globs.map {|file_or_glob| Dir.glob( file_or_glob ) }.flatten
     end
 
     def default_pattern?
@@ -96,17 +73,12 @@ module InteractiveGrep
           end
           @current_pattern = prompt( line )
         end
-        if verbose?
-          puts "." if 0 == (counter % enough_lines_to_indicate)
-        end
+        puts "." if verbose? && 0 == (counter % enough_lines_to_indicate)
       end
       reset_file_index
       puts "no more files.\n" if verbose?
       if just_count?
-        if verbose?
-          puts "matched #{counter} line(s)"
-          puts "done.\n"
-        end
+        puts "matched #{counter} line(s)\ndone.\n" if verbose?
         counter
       else
         puts "done.\n" if verbose?
@@ -129,39 +101,25 @@ module InteractiveGrep
     end
 
     def prompt( msg )
-      if verbose? && msg && !just_count?
-        puts "\n>>\n#{msg}\n<<"
-      end
+      puts "\n>>\n#{msg}\n<<" if verbose? && msg && !just_count?
 
       if interactive?
-        puts "S | O | <pattern: [#{current_pattern_string}]> ? "
-        user_input = STDIN.gets.strip
+        puts ". | O | <pattern: [#{current_pattern_string}]> ? "
+        # user_input = STDIN.gets.strip
+        user_input = STDIN.gets.chomp
         puts ""
-        if DEBUG
-          puts "user_input: >>#{user_input.inspect}<<"
-        end
+        puts "user_input: >>#{user_input.inspect}<<" if DEBUG
 
         case
         when /^\s*$/.match( user_input ) #corresponds w/ <enter> (or <return>)
-          if verbose?
-            puts " => continuing w/ the previous pattern"
-          end
+          puts " => continuing w/ the previous pattern" if verbose?
           @current_pattern
-        when [ "O", "o" ].include?( user_input ) #interactive mode Off
+        when "-" == user_input #interactive mode Off
           @mode = "normal"
-          if verbose?
-            puts " => interactive switched mode off"
-          end
+          puts " => interactive switched mode off" if verbose?
           @current_pattern
-        when [ "S", "s" ].include?( user_input ) #Show every line
-          if verbose?
-            puts " => showing the next line"
-          end
-          /./
         else #use whatever was entered
-          if verbose?
-            puts " => using your input as the new search pattern"
-          end
+          puts " => using your input as the new search pattern" if verbose?
           %r{#{user_input}}
         end
       else
