@@ -6,7 +6,8 @@ module InteractiveGrep
     DEFAULT_NUMBER_OF_LINES_TO_INDICATE = 100.freeze
     DEBUG = false.freeze
 
-    attr_accessor :file_names, :current_pattern, :initial_pattern, :gz, :file_index, :enough_lines_to_indicate
+    attr_accessor :file_names, :current_pattern, :initial_pattern, :file_index, :enough_lines_to_indicate
+    attr_writer :gz
 
     def initialize( options = nil )
       options ||= {}
@@ -28,7 +29,7 @@ module InteractiveGrep
     end
 
     def self.globs_to_files( files_or_globs )
-      files_or_globs = files_or_globs.is_a?( Array ) ? [ files_or_globs ] : files_or_globs
+      files_or_globs = files_or_globs.is_a?( Array ) ? files_or_globs : [ files_or_globs ]
       files_or_globs.map {|file_or_glob| Dir.glob( file_or_glob ) }.flatten
     end
 

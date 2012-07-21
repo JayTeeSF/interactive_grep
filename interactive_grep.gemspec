@@ -19,4 +19,5 @@ Gem::Specification.new do |s|
 
   # specify any dependencies here; for example:
   s.add_development_dependency "rspec", "~> 2.11.0"
+  s.add_development_dependency "ruby-debug19"
 end

@@ -26,7 +26,7 @@ describe InteractiveGrep::Grepper do
         end
 
         it "should have gz set to false" do
-          grepper.gz.should be_false
+          grepper.should_not be_gz
         end
       end
 
@@ -38,7 +38,7 @@ describe InteractiveGrep::Grepper do
         end
 
         it "should have gz set to true" do
-          grepper.gz.should be_true
+          grepper.should be_gz
         end
       end
 
@@ -50,7 +50,7 @@ describe InteractiveGrep::Grepper do
         end
 
         it "should have gz set to true" do
-          grepper.gz.should be_true
+          grepper.should be_gz
         end
       end
 
@@ -62,7 +62,7 @@ describe InteractiveGrep::Grepper do
         end
 
         it "should have gz set to false" do
-          grepper.gz.should be_false
+          grepper.should_not be_gz
         end
       end
     end
