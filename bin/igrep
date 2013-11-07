@@ -11,7 +11,7 @@ end
 require 'optparse'
 
 options = {}
-options["verbose"] = true
+options["verbose"] = false
 
 opt_parser = OptionParser.new do |opts|
   opts.banner = "Usage: #{$0} [OPTIONS] A_FILEGLOB or FILE(S)"
@@ -24,6 +24,10 @@ opt_parser = OptionParser.new do |opts|
   options["mode"] = 'interactive'
   opts.on( "--mode [MODE]", ['interactive', 'count', 'normal'], "'interactive', 'count' or 'normal'") do |m|
     options["mode"] = m
+  end
+
+  opts.on( "-v", '--verbose', "turn on verbosity") do
+    options["verbose"] = true
   end
 
   opts.on_tail( '-h', '--help', 'This help screen' ) do
@@ -42,6 +46,6 @@ end
 
 igrep = InteractiveGrep::Grepper.new( options )
 puts "Welcome..." if :interactive == options["mode"]
-igrep.run()
+puts igrep.run()
 
 exit

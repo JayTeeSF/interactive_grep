@@ -13,7 +13,8 @@ module InteractiveGrep
       options ||= {}
 
       @progress_indicator_count = options[:progress_indicator_count] || DEFAULT_PROGRESS_INDICATOR_COUNT
-      @verbose = DEBUG || !!options[ "verbose" ]
+      @verbose = options.has_key?("verbose") ? options[ "verbose" ] : DEBUG
+      # puts "verbose: #{@verbose.inspect}"
       @mode = options[ "mode" ] || "normal"
       @gz = options[ "gz" ]
       @initial_pattern = !!options[ "pattern" ] ? %r{#{options[ "pattern" ]}} : DEFAULT_PATTERN
@@ -61,12 +62,19 @@ module InteractiveGrep
       @file_index += 1
     end
 
+    def matches?(_line, _pattern)
+      return _line =~ _pattern
+    rescue ArgumentError
+      return false
+    end
+
     def run
       counter = 0
       results = []
       @current_pattern = initial_pattern
       while line = next_line
-        if line[@current_pattern]
+        # if line[@current_pattern]
+        if matches?(line, @current_pattern)
           line.strip!
           counter += 1
           unless just_count? || ( verbose? && interactive? )
@@ -79,7 +87,7 @@ module InteractiveGrep
       reset_file_index
       puts "no more files.\n" if verbose?
       if just_count?
-        puts "matched #{counter} line(s)\ndone.\n" if verbose?
+        puts "matched #{counter} line(s)\ndone.\n"
         counter
       else
         puts "done.\n" if verbose?
